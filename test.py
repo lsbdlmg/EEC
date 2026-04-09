@@ -75,6 +75,8 @@ def run_test(model_path, csv_template="csv_data/test_data_order.csv", img_dir="T
     if "resnet18" in filename: model_str = "resnet18"
     elif "densenet121" in filename: model_str = "densenet121"
     elif "efficientnet" in filename: model_str = "efficientnet_b0"
+    elif "vit" in filename: model_str = "vit_b_16"
+    elif "swin" in filename: model_str = "swin_t"
     else: model_str = "resnet50"
         
     # 定义并将该测试结果文件存在哪个专属目录下，防止与别的网络测试结果混合
@@ -106,6 +108,10 @@ def run_test(model_path, csv_template="csv_data/test_data_order.csv", img_dir="T
         model_name = "densenet121"
     elif "efficientnet" in model_path:
         model_name = "efficientnet_b0"
+    elif "vit" in model_path:
+        model_name = "vit_b_16"
+    elif "swin" in model_path:
+        model_name = "swin_t"
     else:
         model_name = "resnet50"
         
@@ -120,7 +126,10 @@ def run_test(model_path, csv_template="csv_data/test_data_order.csv", img_dir="T
         from train_binary import build_binary_model
         model = build_binary_model(model_name=model_name)
     else:
-        from train_multi import build_model
+        if model_name in ["vit_b_16", "swin_t"]:
+            from train_eval_multi_vit import build_model
+        else:
+            from train_multi import build_model
         model = build_model(model_name=model_name, num_classes=num_classes)
         
     # 使用 torch.load 原封不动读取硬盘里的模型记忆参数，将其赋予新建出来的一张白纸的骨架上。

@@ -13,7 +13,7 @@ def main():
     
     # ---------------- 1. 定位要测试的基准模型 ----------------
     # 用户需手动修改为你想要测试的具体模型的文件名
-    model_name = 'efficientnet_b0_multi_2026_03_27_20_08_08.pth' 
+    model_name = 'efficientnet_b0_multi_2026_04_09_14_51_40.pth' 
         
     best_model_path = model_name
 
@@ -21,6 +21,8 @@ def main():
     if "resnet18" in model_name: m_str = "resnet18"
     elif "densenet121" in model_name: m_str = "densenet121"
     elif "efficientnet" in model_name: m_str = "efficientnet_b0"
+    elif "vit" in model_name: m_str = "vit_b_16"
+    elif "swin" in model_name: m_str = "swin_t"
     else: m_str = "resnet50"
         
     possible_path = os.path.join("saved_models", f"{m_str}_multi", model_name)

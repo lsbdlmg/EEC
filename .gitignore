@@ -10,6 +10,7 @@ BinaryTestSetImages/
 BinaryTrainSetImages/
 自建数据集-0或1/
 csv_data/
+evaluation_plots/
 
 # Saved Models and Evaluation Results
 saved_models/
