@@ -1,0 +1,19 @@
+# Python Cache
+__pycache__/
+*.pyc
+*.pyo
+
+# Images and Datasets
+TestSetImages/
+TrainingSetImages/
+BinaryTestSetImages/
+BinaryTrainSetImages/
+自建数据集-0或1/
+csv_data/
+
+# Saved Models and Evaluation Results
+saved_models/
+eval_results/
+Hard_Cases_All_Models_Failed/
+*.pth
+*.csv
