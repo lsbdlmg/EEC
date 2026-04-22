@@ -105,3 +105,4 @@ if error_images_per_model:
     print("\n[完成] 所有的疑难杂症图片已被成功聚合完毕，请前往审查。")
 else:
     print("没有找到错误判断的数据。")
+    # python find_common_errors.py

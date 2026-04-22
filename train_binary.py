@@ -1,6 +1,7 @@
 import os
 import time
 import pandas as pd
+import numpy as np
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -8,6 +9,8 @@ from torch.utils.data import Dataset, DataLoader
 from torchvision import transforms, models
 from PIL import Image
 from sklearn.model_selection import train_test_split
+import matplotlib.pyplot as plt
+from scipy.interpolate import PchipInterpolator
 from tqdm import tqdm
 import copy
 
@@ -86,12 +89,86 @@ def build_binary_model(model_name="resnet18"):
         num_ftrs = model.classifier[1].in_features
         model.classifier[1] = nn.Linear(num_ftrs, num_classes)
         
+    elif model_name == "vit_b_16":
+        model = models.vit_b_16(weights=models.ViT_B_16_Weights.DEFAULT)
+        model.heads.head = nn.Linear(model.heads.head.in_features, num_classes)
+        
+    elif model_name == "swin_t":
+        model = models.swin_t(weights=models.Swin_T_Weights.DEFAULT)
+        model.head = nn.Linear(model.head.in_features, num_classes)
+        
     else: 
         model = models.resnet50(weights=models.ResNet50_Weights.DEFAULT)
         num_ftrs = model.fc.in_features
         model.fc = nn.Linear(num_ftrs, num_classes)
     
     return model
+
+def plot_training_curves(history, model_name, timestamp):
+    """实时绘画折线图拟合光滑曲线"""
+    epochs = np.arange(1, len(history['train_loss']) + 1)
+    
+    if len(epochs) == 0:
+        return
+        
+    plt.figure(figsize=(14, 6))
+    
+    # 绘制 Loss
+    plt.subplot(1, 2, 1)
+    if len(epochs) > 3:
+        epochs_smooth = np.linspace(epochs.min(), epochs.max(), 300)
+        
+        spline_train_loss = PchipInterpolator(epochs, history['train_loss'])
+        spline_val_loss = PchipInterpolator(epochs, history['val_loss'])
+        
+        plt.plot(epochs, history['train_loss'], label='Train Loss (Raw)', marker='o', linestyle='--', alpha=0.4, color='blue')
+        plt.plot(epochs, history['val_loss'], label='Val Loss (Raw)', marker='o', linestyle='--', alpha=0.4, color='orange')
+        
+        plt.plot(epochs_smooth, spline_train_loss(epochs_smooth), label='Train Loss (Smooth)', color='blue', linewidth=2)
+        plt.plot(epochs_smooth, spline_val_loss(epochs_smooth), label='Val Loss (Smooth)', color='orange', linewidth=2)
+    else:
+        plt.plot(epochs, history['train_loss'], label='Train Loss', marker='o', color='blue')
+        plt.plot(epochs, history['val_loss'], label='Val Loss', marker='o', color='orange')
+        
+    plt.title('Training and Validation Loss', fontsize=14)
+    plt.xlabel('Epochs', fontsize=12)
+    plt.ylabel('Loss', fontsize=12)
+    plt.legend()
+    plt.grid(True, linestyle='--', alpha=0.6)
+    
+    # 绘制 Accuracy
+    plt.subplot(1, 2, 2)
+    if len(epochs) > 3:
+        epochs_smooth = np.linspace(epochs.min(), epochs.max(), 300)
+        
+        spline_train_acc = PchipInterpolator(epochs, history['train_acc'])
+        spline_val_acc = PchipInterpolator(epochs, history['val_acc'])
+        
+        plt.plot(epochs, history['train_acc'], label='Train Acc (Raw)', marker='o', linestyle='--', alpha=0.4, color='green')
+        plt.plot(epochs, history['val_acc'], label='Val Acc (Raw)', marker='o', linestyle='--', alpha=0.4, color='red')
+        
+        plt.plot(epochs_smooth, spline_train_acc(epochs_smooth), label='Train Acc (Smooth)', color='green', linewidth=2)
+        plt.plot(epochs_smooth, spline_val_acc(epochs_smooth), label='Val Acc (Smooth)', color='red', linewidth=2)
+    else:
+        plt.plot(epochs, history['train_acc'], label='Train Acc', marker='o', color='green')
+        plt.plot(epochs, history['val_acc'], label='Val Acc', marker='o', color='red')
+        
+    plt.title('Training and Validation Accuracy', fontsize=14)
+    plt.xlabel('Epochs', fontsize=12)
+    plt.ylabel('Accuracy', fontsize=12)
+    plt.legend()
+    plt.grid(True, linestyle='--', alpha=0.6)
+    
+    plt.tight_layout()
+    
+    # 按文件夹和模型名字存放图案
+    save_dir = os.path.join("evaluation_plots", f"{model_name}_binary", f"{model_name}_{timestamp}")
+    os.makedirs(save_dir, exist_ok=True)
+    
+    save_path = os.path.join(save_dir, f"curves.png")
+    
+    plt.savefig(save_path, dpi=300)
+    plt.close()
 
 def train_binary_model(model_name="resnet18"):
 
@@ -104,7 +181,7 @@ def train_binary_model(model_name="resnet18"):
     
     BATCH_SIZE = 16
     EPOCHS = 10
-    LR = 1e-4
+    LR = 3e-5 if ("vit" in model_name or "swin" in model_name) else 1e-4
     IMG_DIR = "BinaryTrainSetImages"
     CSV_FILE = "csv_data/mytrain.csv"
     
@@ -136,6 +213,13 @@ def train_binary_model(model_name="resnet18"):
     # 增加 "_binary_" 标识符
     run_timestamp = time.strftime("%Y_%m_%d_%H_%M_%S", time.localtime())
     
+    history = {
+        'train_loss': [],
+        'train_acc': [],
+        'val_loss': [],
+        'val_acc': []
+    }
+    
     for epoch in range(EPOCHS):
         print(f"\nEpoch（轮次） {epoch+1}/{EPOCHS}")
         print("-" * 10)
@@ -164,6 +248,9 @@ def train_binary_model(model_name="resnet18"):
         epoch_acc = running_corrects.double() / len(train_dataset)
         print(f"Train Loss（训练损失）: {epoch_loss:.4f} Acc（训练准确率）: {epoch_acc:.4f}")
         
+        history['train_loss'].append(epoch_loss)
+        history['train_acc'].append(epoch_acc.item())
+        
         # Validation
         model.eval()
         val_loss = 0.0
@@ -184,6 +271,12 @@ def train_binary_model(model_name="resnet18"):
         val_epoch_acc = val_corrects.double() / len(val_dataset)
         print(f"Val Loss（验证损失）: {val_epoch_loss:.4f} Acc（验证准确率）: {val_epoch_acc:.4f}")
         
+        history['val_loss'].append(val_epoch_loss)
+        history['val_acc'].append(val_epoch_acc.item())
+        
+        # 实时绘画折线图（覆盖之前保存的）
+        plot_training_curves(history, model_name, run_timestamp)
+        
         scheduler.step()
         
         if val_epoch_acc > best_acc:
@@ -193,6 +286,7 @@ def train_binary_model(model_name="resnet18"):
             best_model_name = os.path.join(model_dir, f"{model_name}_binary_{run_timestamp}.pth")
             torch.save(model.state_dict(), best_model_name)
             print(f"[*] 最佳模型已更新，准确率为: {best_acc:.4f}")
+            
     print(f"\n训练完成！模型名称：{model_name}_binary_{run_timestamp}.pth")
     print(f"\n最高准确率: {best_acc:.4f}")
 
@@ -200,5 +294,8 @@ if __name__ == '__main__':
     # model_name = "resnet18"
     # model_name = "resnet50"
     # model_name = "densenet121"
-    model_name =   "efficientnet_b0"
+    # model_name = "efficientnet_b0"
+    # model_name = "vit_b_16"
+    model_name = "swin_t"
     train_binary_model(model_name=model_name)
+    # python train_binary.py

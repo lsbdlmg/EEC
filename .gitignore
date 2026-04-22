@@ -18,3 +18,7 @@ eval_results/
 Hard_Cases_All_Models_Failed/
 *.pth
 *.csv
+
+# system and exports
+exports/
+system_models/

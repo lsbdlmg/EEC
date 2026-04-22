@@ -17,13 +17,15 @@ def main():
     
     # ---------------- 1. 定位要测试的模型权重文件 ----------------
     # 用户需手动修改为你想要测试的具体模型的文件名
-    model_name = 'densenet121_binary_2026_03_29_23_40_22.pth' 
-        
+    model_name = 'swin_t_binary_2026_04_22_13_23_40.pth' 
+    # python test_binary.py
     best_model_path = model_name
     # 解析预训练架构类别
     if "resnet18" in model_name: m_str = "resnet18"
     elif "densenet121" in model_name: m_str = "densenet121"
     elif "efficientnet" in model_name: m_str = "efficientnet_b0"
+    elif "vit" in model_name: m_str = "vit_b_16"
+    elif "swin" in model_name: m_str = "swin_t"
     else: m_str = "resnet50"
         
     possible_path = os.path.join("saved_models", f"{m_str}_binary", model_name)
