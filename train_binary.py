@@ -162,7 +162,7 @@ def plot_training_curves(history, model_name, timestamp):
     plt.tight_layout()
     
     # 按文件夹和模型名字存放图案
-    save_dir = os.path.join("evaluation_plots", f"{model_name}_binary", f"{model_name}_{timestamp}")
+    save_dir = os.path.join("eval_plots", f"{model_name}_binary", f"{model_name}_{timestamp}")
     os.makedirs(save_dir, exist_ok=True)
     
     save_path = os.path.join(save_dir, f"curves.png")
@@ -295,7 +295,7 @@ if __name__ == '__main__':
     # model_name = "resnet50"
     # model_name = "densenet121"
     # model_name = "efficientnet_b0"
-    # model_name = "vit_b_16"
-    model_name = "swin_t"
+    model_name = "vit_b_16"
+    # model_name = "swin_t"
     train_binary_model(model_name=model_name)
     # python train_binary.py

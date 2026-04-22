@@ -121,7 +121,7 @@ def plot_confusion_matrix(cm, model_name, acc, f1, timestamp):
     plt.xlabel('Predicted Label', fontsize=12)
     plt.tight_layout()
     
-    save_dir = os.path.join("evaluation_plots", f"{model_name}_multi", f"{model_name}_{timestamp}")
+    save_dir = os.path.join("eval_plots", f"{model_name}_multi", f"{model_name}_{timestamp}")
     os.makedirs(save_dir, exist_ok=True)
     save_path = os.path.join(save_dir, f"cm.png")
     plt.savefig(save_path, dpi=300)
@@ -191,7 +191,7 @@ def plot_training_curves(history, model_name, timestamp):
     plt.tight_layout()
     
     # 按文件夹和模型名字存放图案
-    save_dir = os.path.join("evaluation_plots", f"{model_name}_multi", f"{model_name}_{timestamp}")
+    save_dir = os.path.join("eval_plots", f"{model_name}_multi", f"{model_name}_{timestamp}")
     os.makedirs(save_dir, exist_ok=True)
     
     save_path = os.path.join(save_dir, f"curves.png")

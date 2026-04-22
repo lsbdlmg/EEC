@@ -428,3 +428,4 @@ if __name__ == "__main__":
     root = tk.Tk()
     app = CADSystemGUI(root)
     root.mainloop()
+    # python gui_system.py

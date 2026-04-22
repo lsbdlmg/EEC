@@ -15,6 +15,7 @@ evaluation_plots/
 # Saved Models and Evaluation Results
 saved_models/
 eval_results/
+eval_plots/
 Hard_Cases_All_Models_Failed/
 *.pth
 *.csv
@@ -22,3 +23,7 @@ Hard_Cases_All_Models_Failed/
 # system and exports
 exports/
 system_models/
+
+build/
+dist/
+gui_system.spec
