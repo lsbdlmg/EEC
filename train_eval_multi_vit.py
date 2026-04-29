@@ -335,9 +335,11 @@ if __name__ == '__main__':
     # model_name = "resnet18"
     # model_name = "resnet50"
     # model_name = "densenet121"
-    model_name = "efficientnet_b0"
+    # model_name = "efficientnet_b0"
     # model_name = "vit_b_16"
-    # model_name = "swin_t"
+    model_name = "swin_t"
+    # 循环3次 每次执行不同的模型
+    # for model_name in ["resnet18", "resnet50", "swin_t"]:
     train_and_eval(model_name=model_name)
 
     # python train_eval_multi_vit.py

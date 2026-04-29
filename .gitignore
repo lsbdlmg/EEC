@@ -10,9 +10,9 @@ BinaryTestSetImages/
 BinaryTrainSetImages/
 自建数据集-0或1/
 csv_data/
-evaluation_plots/
+ManualTest_Class3_Remaining/
 
-# Saved Models and Evaluation Results
+Saved Models and Evaluation Results
 saved_models/
 eval_results/
 eval_plots/
@@ -23,7 +23,6 @@ Hard_Cases_All_Models_Failed/
 # system and exports
 exports/
 system_models/
-
 build/
 dist/
 gui_system.spec

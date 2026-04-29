@@ -13,7 +13,7 @@ def main():
     
     # ---------------- 1. 定位要测试的基准模型 ----------------
     # 用户需手动修改为你想要测试的具体模型的文件名
-    model_name = 'efficientnet_b0_multi_2026_04_22_13_01_38.pth' 
+    model_name = 'vit_b_16_multi_2026_04_23_12_49_10.pth' 
     # python test_multi.py
     best_model_path = model_name
 

@@ -20,7 +20,7 @@ for f in csv_files:
 # 我们只取最新的四大网络 (resnet18, resnet50, densenet121, efficientnet_b0)
 # 每个网络取最新的一个 csv
 
-model_types = ['resnet18', 'resnet50', 'densenet121', 'efficientnet_b0']
+model_types = ['resnet18', 'resnet50', 'densenet121', 'efficientnet_b0', 'vit_b_16', 'swin_t']
 latest_csvs = {}
 
 for m in model_types:
@@ -30,12 +30,12 @@ for m in model_types:
         m_files.sort()
         latest_csvs[m] = m_files[-1]
 
-print("\n--- 提取最新日期的四个模型结果 ---")
+print("\n--- 提取最新日期的六个模型结果 ---")
 for k, v in latest_csvs.items():
     print(k, ":", v)
 
-if len(latest_csvs) < 4:
-    print("警告：没凑齐4个二分类模型的结果！")
+if len(latest_csvs) < 6:
+    print("警告：没凑齐6个二分类模型的结果！")
 
 # 这里假设 test.py 最后输出的 csv 表格里有一列是 '正确率...' 或者 '错误' 或者能对比真实标签
 # 更保险的做法：拿 csv_data/mytest.csv 作为真实标签，但有可能是别的模板。
@@ -76,10 +76,10 @@ if error_images_per_model:
         all_error_images.extend(err_set)
         
     error_counts = Counter(all_error_images)
-    # 取出至少有 3 个模型都预测错的图片
-    common_errors = {img for img, count in error_counts.items() if count >= 3}
+    # 取出至少有 5 个模型都预测错的图片
+    common_errors = {img for img, count in error_counts.items() if count >= 4}
     
-    print(f"\n>>> 至少有 3 个模型预测错误的图片数量: {len(common_errors)} 张 <<<")
+    print(f"\n>>> 至少有 5 个模型预测错误的图片数量: {len(common_errors)} 张 <<<")
     
     # 将这些预测失败的共性难点图片导出到一个新的专属文件夹供人工审查
     run_timestamp = time.strftime("%Y_%m_%d_%H_%M_%S", time.localtime())
@@ -90,13 +90,23 @@ if error_images_per_model:
     base_img_dir = "BinaryTestSetImages"
     
     for i, img in enumerate(sorted(common_errors)):
+        # 找出预测正确的模型
+        correct_models = [m for m, err_set in error_images_per_model.items() if img not in err_set]
+        
+        # 构建新的文件名
+        if correct_models:
+            correct_str = "_".join(correct_models)
+            new_img_name = f"对_{correct_str}_{img}"
+        else:
+            new_img_name = f"全错_{img}"
+            
         # 打印部分列表
         if i < 23:
-            print(f" {i+1}. {img}")
+            print(f" {i+1}. {img} -> {new_img_name}")
             
         # 复制操作
         src_path = os.path.join(base_img_dir, img)
-        dst_path = os.path.join(export_dir, img)
+        dst_path = os.path.join(export_dir, new_img_name)
         if os.path.exists(src_path):
             shutil.copy(src_path, dst_path)
         else:

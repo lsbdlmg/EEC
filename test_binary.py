@@ -17,7 +17,7 @@ def main():
     
     # ---------------- 1. 定位要测试的模型权重文件 ----------------
     # 用户需手动修改为你想要测试的具体模型的文件名
-    model_name = 'swin_t_binary_2026_04_22_13_23_40.pth' 
+    model_name = 'vit_b_16_binary_2026_04_22_14_39_15.pth' 
     # python test_binary.py
     best_model_path = model_name
     # 解析预训练架构类别

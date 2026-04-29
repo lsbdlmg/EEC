@@ -291,11 +291,11 @@ def train_binary_model(model_name="resnet18"):
     print(f"\n最高准确率: {best_acc:.4f}")
 
 if __name__ == '__main__':
-    # model_name = "resnet18"
+    model_name = "resnet18"
     # model_name = "resnet50"
     # model_name = "densenet121"
     # model_name = "efficientnet_b0"
-    model_name = "vit_b_16"
+    # model_name = "vit_b_16"
     # model_name = "swin_t"
     train_binary_model(model_name=model_name)
     # python train_binary.py

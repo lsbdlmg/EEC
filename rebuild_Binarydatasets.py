@@ -17,8 +17,7 @@ def main():
     print("==================================================")
     print(" 开始执行混合域数据集重组架构 (Domain Mix Building)")
     print("==================================================\n")
-    
-    # 锁定随机种子(42是深度学习经典的万能数字)，保证如果你运行两次这个脚本，它抽取的 500 张永远是那一批，保障科学控制变量法。
+    # 随机种子固定，确保每次运行结果一致，便于调试和复现
     random.seed(42)
 
     # ---- 原始数据输入路径配置 ----
@@ -31,7 +30,7 @@ def main():
     TEST_DIR = "BinaryTestSetImages"       # 装载被严密隔离的 1000 张自建数据的考试盲图盒
     TRAIN_DIR = "BinaryTrainSetImages"     # 新旧混合的二分类训练图盒
     
-    # 清理历史包袱：如果发现以前运过一次产生了这几个文件夹，直接连根拔起全部删除，确保本次是干净的重新构建。
+    # 第一步：清空旧的输出目录，准备装载新数据
     print("第一步：正在清空旧的 BinaryTestSetImages 和 BinaryTrainSetImages 文件夹...")
     for d in [TEST_DIR, TRAIN_DIR]:
         if os.path.exists(d):
@@ -75,8 +74,8 @@ def main():
     no_eec_files = [f for f in os.listdir(CUSTOM_NO_EEC_DIR) if f.endswith(('.png', '.jpg', '.jpeg'))]
     random.shuffle(no_eec_files)
     
-    no_eec_test = no_eec_files[:250]
-    no_eec_train = no_eec_files[250:]
+    no_eec_test = no_eec_files[:250] # 切割前250张作为跨域测试图
+    no_eec_train = no_eec_files[250:] # 切割第250以后的所有，混入训练堆
 
     # 2.1 拷贝 健康(no-eec) 测试集，和上面同样的操作，但标签归宿定为 [0]
     for f in tqdm(no_eec_test, desc="  -> 抽取 250 张至测试集"):
@@ -130,6 +129,7 @@ def main():
     # 3.2 划分旧版癌症(3)：抽取250张去测试集，再截取950张去训练集（共计动用1200张以追求二分类均衡）
     orig_class3_test = orig_class3[:250]
     orig_class3_train = orig_class3[250:1200]
+    orig_class3_manual = orig_class3[1200:1250] # 这250张剩余的癌症图先放一边，单独放到一个手动测试文件夹里，留给后续的人工排查和模型微调使用
 
     for f in tqdm(orig_class3_test, desc="  -> 抽取 250 张旧版癌症(3)至测试集"):
         new_name = f"test_orig_class3_{f}"
@@ -143,7 +143,18 @@ def main():
         src_path = os.path.join(ORIGINAL_IMG_DIR, f)
         if os.path.exists(src_path):
             shutil.copy(src_path, os.path.join(TRAIN_DIR, new_name))
-            list_train.append((new_name, 1)) # 注意老版中的类别3在这里被归属降维打击映射成了二分类的患病(1)
+            list_train.append((new_name, 1))
+
+    MANUAL_DIR = "ManualTest_Class3_Remaining"
+    if os.path.exists(MANUAL_DIR):
+        shutil.rmtree(MANUAL_DIR)
+    os.makedirs(MANUAL_DIR)
+    
+    for f in tqdm(orig_class3_manual, desc="  -> 导出剩余的50张旧版癌症(3)至手动测试文件夹"):
+        src_path = os.path.join(ORIGINAL_IMG_DIR, f)
+        if os.path.exists(src_path):
+            shutil.copy(src_path, os.path.join(MANUAL_DIR, f))
+ # 注意老版中的类别3在这里被归属降维打击映射成了二分类的患病(1)
 
     # ===============================================
     # 4. 生成统一标准的描述清单映射表 (CSV)
@@ -170,3 +181,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+    # python rebuild_Binarydatasets.py
