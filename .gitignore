@@ -19,7 +19,7 @@ eval_plots/
 Hard_Cases_All_Models_Failed/
 *.pth
 *.csv
-
+*.rar
 # system and exports
 exports/
 system_models/
