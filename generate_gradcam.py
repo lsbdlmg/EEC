@@ -170,17 +170,5 @@ def generate_cam_heatmap(model_name="vit_b_16", weights_path=None, test_img_path
     print(f"[*] 成功保存热力图截图至: {out_path}")
 
 if __name__ == '__main__':
-    # 【如何使用】: 
-    # 1. 在此指定之前训练出来的权重 (.pth 文件)
-    # 2. 以及想要进行验证的图片地址 (可以从测试集挑出模型判断正确的和判断错的)
-    #
-    # 例：
-    # generate_cam_heatmap(
-    #     model_name="vit_b_16",
-    #     weights_path="saved_models/vit_b_16_multi/...pth", 
-    #     test_img_path="TestSetImages/some_image_01.jpg"
-    # )
-    
-    # 作为掩码示例跑一遍空网络
-    print("----- Grad-CAM 测试程序初始化 -----")
+    # 不用这个脚本
     pass

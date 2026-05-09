@@ -13,8 +13,17 @@ def main():
     
     # ---------------- 1. 定位要测试的基准模型 ----------------
     # 用户需手动修改为你想要测试的具体模型的文件名
-    model_name = 'vit_b_16_multi_2026_04_23_12_49_10.pth' 
-    # python test_multi.py
+    model_name = 'vit_b_16_multi_2026_05_01_10_50_44.pth' 
+    """
+    densenet121_multi_2026_05_01_17_13_08
+    efficientnet_b0_multi_2026_05_01_19_05_01
+    resnet18_multi_2026_05_01_15_15_30
+    resnet50_multi_2026_05_01_15_55_10
+    swin_t_multi_2026_05_01_13_37_40
+    vit_b_16_multi_2026_05_01_10_50_44
+    """
+
+     # python test_multi.py
     best_model_path = model_name
 
     # 解析预训练架构类别

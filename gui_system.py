@@ -393,7 +393,7 @@ class CADSystemGUI:
                 insert_text(final_res, "normal")
             else:
                 final_res_class = most_common[0][0]
-                final_res = f"综合肯定预测: 【{class_names[final_res_class]}】"
+                final_res = f"综合预测: 【{class_names[final_res_class]}】"
                 insert_text(final_res, get_color_tag(c_type, final_res_class))
         
         # 更新输出纯文本

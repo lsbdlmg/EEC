@@ -17,7 +17,7 @@ def main():
     
     # ---------------- 1. 定位要测试的模型权重文件 ----------------
     # 用户需手动修改为你想要测试的具体模型的文件名
-    model_name = 'vit_b_16_binary_2026_04_22_14_39_15.pth' 
+    model_name = 'vit_b_16_binary_2026_05_01_22_43_32.pth' 
     # python test_binary.py
     best_model_path = model_name
     # 解析预训练架构类别
@@ -85,7 +85,7 @@ def main():
 
         # 在刚才那张预测表的最右侧追加出这个阅卷列，作为总结展示
         pred_df[new_column_name] = validation_status
-        # 使用 utf-8-sig 非常重要，它能强行带上BOM头，防止通过微软Excel软件点开时产生中文乱码
+        # 保存新的 CSV 文件，覆盖原来的预测结果表
         pred_df.to_csv(output_csv_path, index=False, encoding='utf-8-sig') 
 
         print(f"\n=====================================================")

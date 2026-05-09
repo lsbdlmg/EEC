@@ -26,11 +26,11 @@ def main():
     ORIGINAL_CSV = "TrainingSet.csv"
     ORIGINAL_IMG_DIR = "TrainingSetImages"                           # 官方/早期主训练图片库
 
-    # ---- 最终洗牌汇聚的目标输出路径配置 ----
-    TEST_DIR = "BinaryTestSetImages"       # 装载被严密隔离的 1000 张自建数据的考试盲图盒
-    TRAIN_DIR = "BinaryTrainSetImages"     # 新旧混合的二分类训练图盒
+    # ---- 最终的目标输出路径配置 ----
+    TEST_DIR = "BinaryTestSetImages"       # 这个文件夹将被重建为全新的跨域测试集，包含来自自建数据和旧数据的混合样本，且标签已经二值化为 0 和 1，方便后续的模型评估和对比分析。
+    TRAIN_DIR = "BinaryTrainSetImages"     # 这个文件夹将被重建为全新的训练集，包含来自自建数据和旧数据的混合样本，且标签已经二值化为 0 和 1，方便后续的模型训练和对比分析。
     
-    # 第一步：清空旧的输出目录，准备装载新数据
+    # 第一步：清空旧的测试集和训练集文件夹，确保它们是干净的空目录，准备接收新的混合数据
     print("第一步：正在清空旧的 BinaryTestSetImages 和 BinaryTrainSetImages 文件夹...")
     for d in [TEST_DIR, TRAIN_DIR]:
         if os.path.exists(d):
@@ -38,7 +38,7 @@ def main():
         os.makedirs(d) # 创建崭新的空目录
     print(" 文件夹已清空。\n")
 
-    # 构建两个清单数组，以便最后能转成 DataFrame 表格写入 CSV
+    # 第二步：定义两个列表缓存，分别用于记录测试集和训练集的文件名及其对应的二值化标签，后续会将这些列表转换成 DataFrame 并导出为 CSV 文件，方便模型读取和使用
     list_test = []
     list_train = []
 
@@ -50,20 +50,20 @@ def main():
     eec_files = [f for f in os.listdir(CUSTOM_EEC_DIR) if f.endswith(('.png', '.jpg', '.jpeg'))]
     random.shuffle(eec_files) # 将这批患病新图内部彻底随机打乱
     
-    # 抽取配额
+    # 抽取配额 - 前250张作为跨域测试图，1000张剩余的混入训练堆
     eec_test = eec_files[:250]     # 切割前250张作为跨域测试图
-    eec_train = eec_files[250:]    # 切割第250以后的所有，混入训练堆
+    eec_train = eec_files[250:1250]    # 切割第250以后的1000张作为训练集，混入训练堆
 
     # 1.1 拷贝 患病(eec) 测试集
-    # 这里加前缀 test_eec_ 是为了保留血统追溯，排查错题时一看名字就知道这图来自哪
+    # 注意：这里的标签已经被直接映射成了二分类的患病(1)，不再保留原来的多分类标签，以适应新的二分类训练和评估需求
     for f in tqdm(eec_test, desc="  -> 抽取 250 张至测试集"):
-        new_name = f"test_eec_{f}"
+        new_name = f"test_eec_{f}"# 给每个文件加上前缀，明确它们的来源和标签，方便后续分析和排查
         shutil.copy(os.path.join(CUSTOM_EEC_DIR, f), os.path.join(TEST_DIR, new_name))
         list_test.append((new_name, 1)) # 把目标文件名及其二值化标签[1]记录到测试表缓存中
         
     # 1.2 拷贝 患病(eec) 剩余训练集
     for f in tqdm(eec_train, desc="  -> 剩余图片放入训练集"):
-        new_name = f"train_custom_eec_{f}"
+        new_name = f"train_custom_eec_{f}"# 给每个文件加上前缀，明确它们的来源和标签，方便后续分析和排查
         shutil.copy(os.path.join(CUSTOM_EEC_DIR, f), os.path.join(TRAIN_DIR, new_name))
         list_train.append((new_name, 1))
 
@@ -75,22 +75,22 @@ def main():
     random.shuffle(no_eec_files)
     
     no_eec_test = no_eec_files[:250] # 切割前250张作为跨域测试图
-    no_eec_train = no_eec_files[250:] # 切割第250以后的所有，混入训练堆
+    no_eec_train = no_eec_files[250:1100] # 切割第250以后的850张作为训练集，混入训练堆
 
     # 2.1 拷贝 健康(no-eec) 测试集，和上面同样的操作，但标签归宿定为 [0]
     for f in tqdm(no_eec_test, desc="  -> 抽取 250 张至测试集"):
-        new_name = f"test_noeec_{f}"
+        new_name = f"test_noeec_{f}"# 给每个文件加上前缀，明确它们的来源和标签，方便后续分析和排查
         shutil.copy(os.path.join(CUSTOM_NO_EEC_DIR, f), os.path.join(TEST_DIR, new_name))
         list_test.append((new_name, 0))
 
     # 2.2 拷贝 健康(no-eec) 剩余训练集
     for f in tqdm(no_eec_train, desc="  -> 剩余图片放入训练集"):
-        new_name = f"train_custom_noeec_{f}"
+        new_name = f"train_custom_noeec_{f}"# 给每个文件加上前缀，明确它们的来源和标签，方便后续分析和排查
         shutil.copy(os.path.join(CUSTOM_NO_EEC_DIR, f), os.path.join(TRAIN_DIR, new_name))
         list_train.append((new_name, 0))
 
     # ===============================================
-    # 3. 从官方老数据中压榨经典知识混入 (解决历史遗留偏斜)
+    # 3. 处理旧版数据集的健康(0)和癌症(3)，并将它们混入测试集和训练集
     # ===============================================
     print("\n正在向训练集混入原数据集...")
     ORIGINAL_CSV = os.path.join("csv_data", "TrainingSet.csv")
@@ -110,7 +110,7 @@ def main():
 
     # 3.1 划分旧版健康(0)：抽取250张去测试集，其余全去训练集
     orig_class0_test = orig_class0[:250]
-    orig_class0_train = orig_class0[250:]
+    orig_class0_train = orig_class0[250:1400]# 这1150张剩余的健康图全都放入训练集，追求二分类的均衡分布
 
     for f in tqdm(orig_class0_test, desc="  -> 抽取 250 张旧版健康(0)至测试集"):
         new_name = f"test_orig_class0_{f}"
@@ -126,13 +126,13 @@ def main():
             shutil.copy(src_path, os.path.join(TRAIN_DIR, new_name))
             list_train.append((new_name, 0))
 
-    # 3.2 划分旧版癌症(3)：抽取250张去测试集，再截取950张去训练集（共计动用1200张以追求二分类均衡）
+    # 3.2 划分旧版癌症(3)：抽取250张去测试集，再截取1000张去训练集（共计动用1250张以追求二分类均衡）
     orig_class3_test = orig_class3[:250]
-    orig_class3_train = orig_class3[250:1200]
-    orig_class3_manual = orig_class3[1200:1250] # 这250张剩余的癌症图先放一边，单独放到一个手动测试文件夹里，留给后续的人工排查和模型微调使用
+    orig_class3_train = orig_class3[250:1250]
+    orig_class3_manual = orig_class3[1250:1300] # 这50张剩余的癌症图先放一边，单独放到一个手动测试文件夹里，留给后续的人工排查和模型微调使用
 
     for f in tqdm(orig_class3_test, desc="  -> 抽取 250 张旧版癌症(3)至测试集"):
-        new_name = f"test_orig_class3_{f}"
+        new_name = f"test_orig_class3_{f}"# 给每个文件加上前缀，明确它们的来源和标签，方便后续分析和排查
         src_path = os.path.join(ORIGINAL_IMG_DIR, f)
         if os.path.exists(src_path):
             shutil.copy(src_path, os.path.join(TEST_DIR, new_name))

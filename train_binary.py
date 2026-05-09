@@ -180,15 +180,17 @@ def train_binary_model(model_name="resnet18"):
         print(f"使用的设备: {device}")
     
     BATCH_SIZE = 16
-    EPOCHS = 10
+    EPOCHS = 50
     LR = 3e-5 if ("vit" in model_name or "swin" in model_name) else 1e-4
     IMG_DIR = "BinaryTrainSetImages"
     CSV_FILE = "csv_data/mytrain.csv"
     
     df = pd.read_csv(CSV_FILE)
     
-    # 划分训练集和验证集
-    train_df, val_df = train_test_split(df, test_size=0.2, random_state=42)
+    # 从训练集4000张中划分出12.5%作为验证集，保持二分类的均衡分布
+    # 测试集1000张已在 test_binary.py 中单独使用，训练时不参与划分。
+    # 训练集：验证集：测试集 = 3500:500:1000 = 7：1：2 的比例，保持二分类的均衡分布。
+    train_df, val_df = train_test_split(df, test_size=0.125, random_state=42)
     
     train_transform, val_transform = get_transforms()
     
@@ -297,5 +299,7 @@ if __name__ == '__main__':
     # model_name = "efficientnet_b0"
     # model_name = "vit_b_16"
     # model_name = "swin_t"
-    train_binary_model(model_name=model_name)
+    for model_name in ["resnet18", "resnet50", "densenet121", "efficientnet_b0", "vit_b_16", "swin_t"]:
+    # for model_name in [ "resnet50", "vit_b_16",]:
+        train_binary_model(model_name=model_name)
     # python train_binary.py

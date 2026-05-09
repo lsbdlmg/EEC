@@ -28,4 +28,5 @@ def check_gpu():
     print("=" * 40)
 
 if __name__ == "__main__":
+    # 运行 GPU 检测函数
     check_gpu()

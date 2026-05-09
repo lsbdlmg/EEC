@@ -16,18 +16,18 @@
    - 模型集成 (Ensemble): 训练三个架构（如 ResNet, DenseNet, EfficientNet），最后将它们的 Softmax 概率加权平均作为最后决定，以显著提升泛化能力。
 """
 
-import os               # 操作系统接口模块，用于创建文件路径和文件夹
-import time             # 时间处理模块，用于生成时间戳命名文件
-import pandas as pd     # pandas 库，用于读取和组织 CSV 数据表
-import torch            # PyTorch 核心模块，支持张量和运算
-import torch.nn as nn   # 神经网络模块，包含各种神经网络层和损失函数
-import torch.optim as optim          # 优化器模块，包含 Adam, SGD 等优化算法
-from torch.utils.data import Dataset, DataLoader  # 数据集与数据加载器，协助批量吐出训练数据
-from torchvision import transforms, models        # 提供预训练模型和丰富的图像处理工具
-from PIL import Image   # Python Imaging Library，用于加载和解析图像文件
+import os                                            # 操作系统接口模块，用于创建文件路径和文件夹
+import time                                          # 时间处理模块，用于生成时间戳命名文件
+import pandas as pd                                  # pandas 库，用于读取和组织 CSV 数据表
+import torch                                         # PyTorch 核心模块，支持张量和运算
+import torch.nn as nn                                # 神经网络模块，包含各种神经网络层和损失函数
+import torch.optim as optim                          # 优化器模块，包含 Adam, SGD 等优化算法
+from torch.utils.data import Dataset, DataLoader     # 数据集与数据加载器，协助批量吐出训练数据
+from torchvision import transforms, models           # 提供预训练模型和丰富的图像处理工具
+from PIL import Image                                # Python Imaging Library，用于加载和解析图像文件
 from sklearn.model_selection import train_test_split # 来自 scikit-learn 库，用于打乱和切割数据集
-from tqdm import tqdm   # 一个极好的进度条库，让长时间的训练可视化
-import copy             # 提供深拷贝功能，保证保存最佳模型参数时不被后续污染
+from tqdm import tqdm                                # 一个极好的进度条库，让长时间的训练可视化
+import copy                                          # 提供深拷贝功能，保证保存最佳模型参数时不被后续污染
 
 # ==========================================
 # 类别字典定义 (Medical Class Definitions)
@@ -57,7 +57,7 @@ class EsophagusDataset(Dataset):
         # 把大目录路径和子图片名完美接合成绝对路径
         img_path = os.path.join(self.img_dir, img_name)
         
-        # 核心修改：使用 PIL 将其统一转为标准的 L 灰度图，然后再强制铺成模型的 RGB 三通道(但去除了色彩干扰)
+        # 使用 PIL 将其统一转为标准的 L 灰度图，然后再强制铺成模型的 RGB 三通道(但去除了色彩干扰)
         image = Image.open(img_path).convert('L').convert('RGB')
         # 获取与该图像配对的医学类别 (0,1,2,3)
         label = int(self.df.iloc[idx]['class_number'])
